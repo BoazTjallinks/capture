@@ -55,6 +55,10 @@ func main() {
 		os.Getenv("PORT"),
 		os.Getenv("API_SECRET"),
 	)
+	appConfig = appConfig.WithScriptExecution(
+		os.Getenv("SCRIPT_EXECUTION_ENABLED") == "true",
+		os.Getenv("ALLOWED_SCRIPT_RUNTIMES"),
+	)
 
 	srv := server.NewServer(appConfig, nil, &handler.CaptureMeta{
 		Version: Version,

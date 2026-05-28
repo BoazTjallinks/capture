@@ -79,6 +79,12 @@ func InitializeHandler(config *config.Config, metadata *handler.CaptureMeta) htt
 	apiV1.GET("/metrics/net", metricsHandler.MetricsNet)
 	apiV1.GET("/metrics/docker", metricsHandler.MetricsDocker)
 
+	// Script execution endpoint (opt-in via SCRIPT_EXECUTION_ENABLED env var).
+	if config.ScriptExecutionEnabled {
+		scriptHandler := handler.NewScriptHandler(10, 50, config.AllowedRuntimes)
+		apiV1.POST("/script", scriptHandler.Execute)
+	}
+
 	return r.Handler()
 }
 

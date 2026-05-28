@@ -197,6 +197,64 @@ paths:
         - type: http
           scheme: bearer
           bearerFormat: JWT
+  /api/v1/script:
+    post:
+      summary: Execute a script (only enabled when SCRIPT_EXECUTION_ENABLED=true)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runtime, body]
+              properties:
+                script_id:
+                  type: string
+                  description: Caller-supplied identifier used for audit logging
+                runtime:
+                  type: string
+                  enum: [bash, powershell, python]
+                body:
+                  type: string
+                  description: Script source. Max 64 KiB. No null bytes.
+                timeout_ms:
+                  type: integer
+                  minimum: 1000
+                  maximum: 300000
+                  default: 30000
+                parameters:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Injected as SCRIPT_PARAM_<KEY> environment variables
+      responses:
+        '200':
+          description: Script executed (may have non-zero exit_code)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exit_code:
+                    type: integer
+                  stdout:
+                    type: string
+                  stderr:
+                    type: string
+                  execution_time_ms:
+                    type: integer
+                  timed_out:
+                    type: boolean
+        '400':
+          description: Validation error or runtime not permitted on this agent
+        '401':
+          description: Missing or invalid Authorization header
+        '429':
+          description: Execution queue is full
+      security:
+        - type: http
+          scheme: bearer
+          bearerFormat: JWT
 components:
   schemas:
     AllMetricResponse:
